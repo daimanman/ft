@@ -142,6 +142,7 @@ func main() {
 				if fcol <= lstr-1 {
 					colStr := strings.TrimSpace(strList[fcol])
 					strList[fcol] = getColStr(colStr)
+					fmt.Printf("%-8s ", colStr)
 					for _, cols := range strList {
 						fmt.Printf("%-8s ", cols)
 					}
