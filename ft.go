@@ -52,6 +52,7 @@ func main() {
 	endl := 0
 	fps := make([]*(os.File), 0)
 	rdMap := make(map[int]*(bufio.Reader))
+	ssArray := make([]*string, lenth)
 	for index, filePath := range files {
 		fp, err := os.Open(filePath)
 		if err != nil {
@@ -62,6 +63,12 @@ func main() {
 		rdMap[index] = bufio.NewReader(fp)
 	}
 
+	defer func() {
+		for _, f := range fps {
+			f.Close()
+		}
+	}()
+
 	for {
 		if endl >= lenth {
 			break
@@ -69,21 +76,36 @@ func main() {
 		for i := 0; i < lenth; i++ {
 			rd := rdMap[i]
 			if rd == nil {
-				fmt.Printf("%-9s ", *C)
+				//fmt.Printf("%-9s ", *C)
+				ssArray[i] = C
 				continue
 			}
 			line, err1 := rd.ReadString('\n')
 			if err1 != nil || io.EOF == err1 {
 				endl++
 				rdMap[i] = nil
-				fmt.Printf("%-9s ", *C)
+				//fmt.Printf("%-9s ", *C)
+				ssArray[i] = C
 				continue
 			}
 			line = strings.TrimSpace(line)
-			fmt.Printf("%-9s ", line)
+			//fmt.Printf("%-9s ", line)
+			ssArray[i] = &line
 		}
-		fmt.Printf("\n")
-
+		flagMark := 0
+		for _, str := range ssArray {
+			if *str != *C {
+				flagMark++
+				break
+			}
+			//fmt.Printf("%-9s ", *str)
+		}
+		if flagMark > 0 {
+			for _, str := range ssArray {
+				fmt.Printf("%-9s ", *str)
+			}
+			fmt.Printf("\n")
+		}
 	}
 
 }
