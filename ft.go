@@ -2,18 +2,40 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 )
 
 var (
 	C = flag.String("C", "#", "")
+	D = flag.String("D", "", "列转换字典")
+	F = flag.String("F", "1", "列")
 )
+
+var dictMap map[string]string
+
+func init() {
+	dictMap = make(map[string]string)
+}
+
+func transDict(filename string) {
+	if filename == "" {
+		return
+	}
+	bs, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+	json.Unmarshal(bs, &dictMap)
+}
 
 func GetFiles(paths []string) []string {
 	fs := make([]string, 0)
@@ -49,6 +71,18 @@ func main() {
 		fmt.Printf("未找到文件,请检查参数是否在正确 \n")
 		return
 	}
+	fcol, err := strconv.Atoi(*F)
+	if err != nil {
+		fmt.Println("列指定错误")
+		return
+	}
+	fcol = fcol - 1
+	if fcol < 0 {
+		fcol = 0
+	}
+
+	//解析字典
+	transDict(*D)
 	endl := 0
 	fps := make([]*(os.File), 0)
 	rdMap := make(map[int]*(bufio.Reader))
@@ -101,11 +135,28 @@ func main() {
 			//fmt.Printf("%-9s ", *str)
 		}
 		if flagMark > 0 {
-			for _, str := range ssArray {
-				fmt.Printf("%-9s ", *str)
+			for _, line := range ssArray {
+				//切片
+				strList := strings.Fields(*line)
+				lstr := len(strList)
+				if fcol <= lstr-1 {
+					colStr := strings.TrimSpace(strList[fcol])
+					strList[fcol] = getColStr(colStr)
+					for _, cols := range strList {
+						fmt.Printf("%-8s ", cols)
+					}
+				}
 			}
 			fmt.Printf("\n")
 		}
 	}
 
+}
+
+func getColStr(src string) string {
+	targetStr := dictMap[src]
+	if len(targetStr) == 0 {
+		return src
+	}
+	return targetStr
 }
