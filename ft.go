@@ -17,7 +17,16 @@ var (
 	C = flag.String("C", "#", "")
 	D = flag.String("D", "", "列转换字典")
 	F = flag.String("F", "1", "列")
+	h = flag.Bool("h", false, "显示帮助信息")
+	S = flag.Bool("S", false, "显示原始字段信息")
 )
+
+var useage = `
+    -C 填充字符
+    -D 列转换字典文件
+    -F 需要转换的列 默认为 1
+    -S 显示原始字段信息
+`
 
 var dictMap map[string]string
 
@@ -65,6 +74,10 @@ func GetFiles(paths []string) []string {
 
 func main() {
 	flag.Parse()
+	if *h {
+		fmt.Println(useage)
+		return
+	}
 	files := GetFiles(flag.Args())
 	lenth := len(files)
 	if lenth == 0 {
@@ -142,7 +155,9 @@ func main() {
 				if fcol <= lstr-1 {
 					colStr := strings.TrimSpace(strList[fcol])
 					strList[fcol] = getColStr(colStr)
-					fmt.Printf("%-8s ", colStr)
+					if *S {
+						fmt.Printf("%-8s ", colStr)
+					}
 					for _, cols := range strList {
 						fmt.Printf("%-8s ", cols)
 					}
